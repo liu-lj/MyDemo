@@ -18,7 +18,7 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Flag Capture Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Flag Capture Settings")
 	UStaticMeshComponent* ZoneMesh; // 可视化夺旗区域的网格组件
 
 	UPROPERTY(EditAnywhere, Category = "Flag Capture Settings")

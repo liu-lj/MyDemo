@@ -56,7 +56,7 @@ void PrintCollisionInfo(const UStaticMeshComponent* smComp)
 
 AFlagCaptureZone::AFlagCaptureZone()
 {
-	MyLog("AFlagCaptureZone::AFlagCaptureZone");
+	// MyLog("AFlagCaptureZone::AFlagCaptureZone");
 	PrimaryActorTick.bCanEverTick = false;
 
 	CaptureProgressThreshold = 0.5f;
