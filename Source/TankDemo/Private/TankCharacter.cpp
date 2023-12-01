@@ -6,50 +6,53 @@
 
 #include <Utils.hpp>
 
-ATankCharacter::ATankCharacter() :
-	MovementSpeed(500.0f),
-	RotationSpeed(100.0f),
-	ReloadTime(5.0f),
-	MaxAngle(2.0f),
-	MinAngle(0.1f),
-	ShrinkTime(5.0f),
-	MaxSpeed(1000.0f),
-	Acceleration(10.0f),
-	Friction(200.0f),
-	LastFireTime(-ReloadTime)
+ATankCharacter::ATankCharacter()
+	: MovementSpeed(500.0f), // 移动速度
+	  RotationSpeed(100.0f), // 旋转速度
+	  ElevationAngle(30.0f), // 最大仰角
+	  DepressionAngle(-20.0f), // 最大俯角
+	  ReloadTime(5.0f), // 装填时间
+	  MaxAngle(2.0f), // 最大扰动角度
+	  MinAngle(0.1f), // 最小扰动角度
+	  ShrinkTime(5.0f), // 瞄准时间
+	  MaxSpeed(1000.0f), // 最大速度 (暂未使用)
+	  Acceleration(10.0f), // 加速度
+	  Friction(200.0f), // 摩擦力
+	  LastFireTime(-ReloadTime) // 上次开火时间
 {
 	// 车身网格
-	BodyMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BodyMesh"));
+	BodyMesh = CreateDefaultSubobject<UStaticMeshComponent>("BodyMesh");
 	BodyMesh->SetupAttachment(RootComponent);
 
 	// 摄像机根节点（用于绕坦克旋转相机）
-	CameraRoot = CreateDefaultSubobject<USceneComponent>(TEXT("CameraRoot"));
+	CameraRoot = CreateDefaultSubobject<USceneComponent>("CameraRoot");
 	CameraRoot->SetupAttachment(BodyMesh);
 	// 摄像机组件
-	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComponent"));
+	Camera = CreateDefaultSubobject<UCameraComponent>("CameraComponent");
 	Camera->SetupAttachment(CameraRoot);
 
 	// 炮塔网格
-	TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("TurretMesh"));
+	TurretMesh = CreateDefaultSubobject<UStaticMeshComponent>("TurretMesh");
 	TurretMesh->SetupAttachment(BodyMesh);
 
 	// 炮管网格
-	BarrelMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BarrelMesh"));
+	BarrelMesh = CreateDefaultSubobject<UStaticMeshComponent>("BarrelMesh");
 	BarrelMesh->SetupAttachment(TurretMesh);
 	// 开火位置
-	FirePosition = CreateDefaultSubobject<USceneComponent>(TEXT("FirePosition"));
+	FirePosition = CreateDefaultSubobject<USceneComponent>("FirePosition");
 	FirePosition->SetupAttachment(BarrelMesh);
 
+	// 履带网格
+	TrackMesh = CreateDefaultSubobject<USceneComponent>("TrackMesh");
+	TrackMesh->SetupAttachment(BodyMesh);
+
 	// 开火音效
-	Audio = CreateDefaultSubobject<UAudioComponent>(TEXT("Fire Sound"));
+	Audio = CreateDefaultSubobject<UAudioComponent>("Fire Sound");
 	Audio->SetupAttachment(RootComponent);
 	Audio->bAutoActivate = false;
 }
 
-void ATankCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-}
+void ATankCharacter::BeginPlay() { Super::BeginPlay(); }
 
 void ATankCharacter::Tick(float DeltaTime)
 {
@@ -74,23 +77,24 @@ void ATankCharacter::MoveRight(float AxisValue)
 
 void ATankCharacter::TurnTurret(float AxisValue)
 {
-	float RotationChange = AxisValue * RotationSpeed * GetWorld()->DeltaTimeSeconds;
+	float RotationChange =
+		AxisValue * RotationSpeed * GetWorld()->DeltaTimeSeconds;
 	CameraRoot->AddLocalRotation(FRotator(0.0f, RotationChange, 0.0f));
 	TurretMesh->AddLocalRotation(FRotator(0.0f, RotationChange, 0.0f));
 
-	if (FMath::Abs(AxisValue) > 1e-3)
-		SetMouseMoveTime();
+	if (FMath::Abs(AxisValue) > 1e-3) SetMouseMoveTime();
 }
 
 void ATankCharacter::CameraUpAndDown(float AxisValue)
 {
-	float RotationChange = AxisValue * RotationSpeed * GetWorld()->DeltaTimeSeconds;
+	float RotationChange =
+		AxisValue * RotationSpeed * GetWorld()->DeltaTimeSeconds;
 	FRotator CameraRotation = Camera->GetRelativeRotation();
-	CameraRotation.Pitch = FMath::Clamp(CameraRotation.Pitch + RotationChange, -30.0f, 20.0f);
+	CameraRotation.Pitch = FMath::Clamp(CameraRotation.Pitch + RotationChange,
+	                                    DepressionAngle, ElevationAngle);
 	Camera->SetRelativeRotation(CameraRotation);
 
-	if (FMath::Abs(AxisValue) > 1e-3)
-		SetMouseMoveTime();
+	if (FMath::Abs(AxisValue) > 1e-3) SetMouseMoveTime();
 }
 
 // 根据摩擦力来减缓速度
@@ -105,13 +109,13 @@ void ATankCharacter::ApplyFriction(float DeltaTime)
 	SetActorLocation(NewPosition);
 
 	FVector FrictionForce = -VelocityDirection * Friction;
-	// float mass = GetMass();
 	float Mass = 1;
 	FVector FrictionAcceleration = FrictionForce / Mass;
 
 	CurrentVelocity += FrictionAcceleration * DeltaTime;
 
-	if (FMath::Abs(Speed) <= FMath::Abs(FrictionAcceleration.Size() * DeltaTime))
+	if (FMath::Abs(Speed) <=
+		FMath::Abs(FrictionAcceleration.Size() * DeltaTime))
 	{
 		CurrentVelocity = FVector::ZeroVector;
 	}
@@ -124,8 +128,8 @@ FVector AddRandomOffset(const FVector& Direction, float Angle)
 {
 	// 生成随机扰动
 	float RandomAngle = FMath::RandRange(-Angle, Angle);
-	FVector RandomOffset = FMath::VRandCone(Direction, FMath::DegreesToRadians(RandomAngle));
-
+	FVector RandomOffset =
+		FMath::VRandCone(Direction, FMath::DegreesToRadians(RandomAngle));
 	return RandomOffset;
 }
 
@@ -174,9 +178,11 @@ void ATankCharacter::Fire()
 	SpawnParams.Instigator = GetInstigator();
 
 	if (ATankProjectile* Projectile = GetWorld()->SpawnActor<ATankProjectile>(
-		ProjectileClass, FirePosition->GetComponentLocation(), LaunchDirection.Rotation(), SpawnParams))
+		ProjectileClass, FirePosition->GetComponentLocation(),
+		LaunchDirection.Rotation(), SpawnParams))
 	{
-		LaunchDirection = AddRandomOffset(LaunchDirection, GetAngleOfRandomOffset());
+		LaunchDirection =
+			AddRandomOffset(LaunchDirection, GetAngleOfRandomOffset());
 		Projectile->Launch(LaunchDirection);
 		LastFireTime = GetWorld()->GetTimeSeconds();
 		Audio->Play();
@@ -188,31 +194,54 @@ FVector ATankCharacter::CalculateLaunchDirection() const
 {
 	// 获取鼠标位置下的碰撞点
 	FHitResult HitResult;
-	GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursor(ECC_Visibility, false, HitResult);
+	GetWorld()->GetFirstPlayerController()->GetHitResultUnderCursor(
+		ECC_Visibility, false, HitResult);
 
 	// 计算炮弹的发射方向
 	FVector LaunchDirection = FVector::ZeroVector;
 	if (HitResult.bBlockingHit)
 	{
-		LaunchDirection = HitResult.ImpactPoint - FirePosition->GetComponentLocation();
+		LaunchDirection =
+			HitResult.ImpactPoint - FirePosition->GetComponentLocation();
 		LaunchDirection.Normalize();
 	}
 
 	return LaunchDirection;
 }
 
-void ATankCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void ATankCharacter::SetupPlayerInputComponent(
+	UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	// 旋转相机
 	PlayerInputComponent->BindAxis("Turn", this, &ATankCharacter::TurnTurret);
-	PlayerInputComponent->BindAxis("LookUp", this, &ATankCharacter::CameraUpAndDown);
+	PlayerInputComponent->BindAxis("LookUp", this,
+	                               &ATankCharacter::CameraUpAndDown);
 
 	// 移动
-	PlayerInputComponent->BindAxis("MoveForward", this, &ATankCharacter::MoveForward);
+	PlayerInputComponent->BindAxis("MoveForward", this,
+	                               &ATankCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ATankCharacter::MoveRight);
 
 	// 开火事件
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ATankCharacter::Fire);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this,
+	                                 &ATankCharacter::Fire);
+}
+
+ETankMeshType ATankCharacter::GetTankMeshType(const UStaticMeshComponent* TankMesh) const
+{
+	// 注意：不要更改 if 的顺序
+	// 履带
+	if (TankMesh->GetAttachParent() == TrackMesh) return ETankMeshType::Track;
+	// 炮管
+	if (TankMesh == BarrelMesh || TankMesh->GetAttachParent() == BarrelMesh)
+		return ETankMeshType::Barrel;
+	// 炮塔
+	if (TankMesh == TurretMesh || TankMesh->GetAttachParent() == TurretMesh)
+		return ETankMeshType::Turret;
+	// 车身
+	if (TankMesh == BodyMesh || TankMesh->GetAttachParent() == BodyMesh)
+		return ETankMeshType::Body;
+	return ETankMeshType::None;
 }
