@@ -39,6 +39,11 @@ ATankCharacter::ATankCharacter() :
 	// 开火位置
 	FirePosition = CreateDefaultSubobject<USceneComponent>(TEXT("FirePosition"));
 	FirePosition->SetupAttachment(BarrelMesh);
+
+	// 开火音效
+	Audio = CreateDefaultSubobject<UAudioComponent>(TEXT("Fire Sound"));
+	Audio->SetupAttachment(RootComponent);
+	Audio->bAutoActivate = false;
 }
 
 void ATankCharacter::BeginPlay()
@@ -174,6 +179,7 @@ void ATankCharacter::Fire()
 		LaunchDirection = AddRandomOffset(LaunchDirection, GetAngleOfRandomOffset());
 		Projectile->Launch(LaunchDirection);
 		LastFireTime = GetWorld()->GetTimeSeconds();
+		Audio->Play();
 	}
 }
 

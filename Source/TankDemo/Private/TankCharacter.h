@@ -6,6 +6,7 @@
 #include "TankProjectile.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
+#include "Components/AudioComponent.h"
 #include "TankCharacter.generated.h"
 
 UCLASS()
@@ -42,6 +43,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Tank")
 	USceneComponent* FirePosition;
 
+	UPROPERTY(EditAnywhere, Category = "Tank")
+	UAudioComponent* Audio;
+	 
 	UPROPERTY(EditAnywhere, Category = "Tank")
 	TSubclassOf<ATankProjectile> ProjectileClass;
 
