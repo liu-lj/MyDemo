@@ -9,12 +9,14 @@
 ATankCharacter::ATankCharacter() :
 	MovementSpeed(500.0f),
 	RotationSpeed(100.0f),
+	ReloadTime(5.0f),
+	MaxAngle(2.0f),
+	MinAngle(0.1f),
+	ShrinkTime(5.0f),
 	MaxSpeed(1000.0f),
 	Acceleration(10.0f),
 	Friction(200.0f),
-	MaxAngle(2.0f),
-	MinAngle(0.1f),
-	ShrinkTime(5.0f)
+	LastFireTime(-ReloadTime)
 {
 	// 车身网格
 	BodyMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BodyMesh"));
@@ -135,6 +137,13 @@ float ATankCharacter::GetAimingProgress() const
 	return Progress;
 }
 
+float ATankCharacter::GetRemainingReloadTime() const
+{
+	float ReloadTimeNow = GetWorld()->GetTimeSeconds() - LastFireTime;
+	float RemainingReloadTime = ReloadTime - ReloadTimeNow;
+	return FMath::Max(RemainingReloadTime, 0.0f);
+}
+
 float ATankCharacter::GetAngleOfRandomOffset()
 {
 	return FMath::Lerp(MaxAngle, MinAngle, GetAimingProgress());
@@ -150,6 +159,8 @@ void ATankCharacter::Fire()
 	FVector LaunchDirection = CalculateLaunchDirection();
 	if (LaunchDirection.Length() < 1e-3) return;
 
+	if (GetRemainingReloadTime() > 0.0f) return;
+
 	// 创建炮弹
 	if (!ProjectileClass) return;
 
@@ -162,6 +173,7 @@ void ATankCharacter::Fire()
 	{
 		LaunchDirection = AddRandomOffset(LaunchDirection, GetAngleOfRandomOffset());
 		Projectile->Launch(LaunchDirection);
+		LastFireTime = GetWorld()->GetTimeSeconds();
 	}
 }
 

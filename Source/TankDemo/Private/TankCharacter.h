@@ -16,9 +16,14 @@ class ATankCharacter : public ACharacter
 public:
 	ATankCharacter();
 	virtual void BeginPlay() override;
-
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION(BlueprintCallable, Category = "Tank")
+	float GetAimingProgress() const;
+	// 装填时间
+	UFUNCTION(BlueprintCallable, Category = "Tank")
+	float GetRemainingReloadTime() const;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Tank")
@@ -46,6 +51,8 @@ protected:
 	float RotationSpeed;
 
 	UPROPERTY(EditAnywhere, Category = "Tank")
+	float ReloadTime;
+	UPROPERTY(EditAnywhere, Category = "Tank")
 	float MaxAngle;
 	UPROPERTY(EditAnywhere, Category = "Tank")
 	float MinAngle;
@@ -69,11 +76,11 @@ private:
 	void TurnTurret(float AxisValue);
 	void CameraUpAndDown(float AxisValue);
 	void ApplyFriction(float DeltaTime);
-	float GetAimingProgress() const;
 	float GetAngleOfRandomOffset();
 	void SetMouseMoveTime();
 	void Fire();
 	FVector CalculateLaunchDirection() const;
 
 	float LastMouseMoveTime;
+	float LastFireTime;
 };
