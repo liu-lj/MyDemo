@@ -3,6 +3,8 @@
 
 #include "TankProjectile.h"
 
+#include <Utils.hpp>
+
 #include "Kismet/GameplayStatics.h"
 
 ATankProjectile::ATankProjectile()
@@ -41,6 +43,18 @@ void ATankProjectile::OnProjectileHit(UPrimitiveComponent* HitComponent, AActor*
 	{
 		// 在碰撞点播放粒子效果
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffect, Hit.ImpactPoint);
+
+		// print hit info
+		// 1. print hit actor name
+		MyLog(OtherActor->GetName());
+		// 2. print hit component name
+		MyLog(OtherComp->GetName());
+		// 3. print normal impulse
+		MyLog(FString::Printf(TEXT("NormalImpulse: %s"), *NormalImpulse.ToString())); 
+		// 4. print direction
+		MyLog(FString::Printf(TEXT("Direction: %s"), *Hit.ImpactNormal.ToString()));
+		// 5. print dot(normal, direction) (assumed to be >= 0)
+		MyLog(FString::SanitizeFloat(FVector::DotProduct(NormalImpulse, Hit.ImpactNormal)));
 	}
 
 	// 销毁炮弹

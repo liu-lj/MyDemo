@@ -69,6 +69,7 @@ private:
 	void TurnTurret(float AxisValue);
 	void CameraUpAndDown(float AxisValue);
 	void ApplyFriction(float DeltaTime);
+	float GetAimingProgress() const;
 	float GetAngleOfRandomOffset();
 	void SetMouseMoveTime();
 	void Fire();
