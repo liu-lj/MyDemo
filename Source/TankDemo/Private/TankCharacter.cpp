@@ -4,12 +4,17 @@
 
 #include "TankCharacter.h"
 
+#include <Utils.hpp>
+
 ATankCharacter::ATankCharacter() :
 	MovementSpeed(500.0f),
 	RotationSpeed(100.0f),
 	MaxSpeed(1000.0f),
 	Acceleration(10.0f),
-	Friction(200.0f)
+	Friction(200.0f),
+	MaxAngle(2.0f),
+	MinAngle(0.1f),
+	ShrinkTime(5.0f)
 {
 	// 车身网格
 	BodyMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BodyMesh"));
@@ -66,17 +71,19 @@ void ATankCharacter::TurnTurret(float AxisValue)
 	CameraRoot->AddLocalRotation(FRotator(0.0f, RotationChange, 0.0f));
 	TurretMesh->AddLocalRotation(FRotator(0.0f, RotationChange, 0.0f));
 
-	SetMouseMoveTime();
+	if (FMath::Abs(AxisValue) > 1e-3)
+		SetMouseMoveTime();
 }
 
 void ATankCharacter::CameraUpAndDown(float AxisValue)
 {
 	float RotationChange = AxisValue * RotationSpeed * GetWorld()->DeltaTimeSeconds;
 	FRotator CameraRotation = Camera->GetRelativeRotation();
-	CameraRotation.Pitch = FMath::Clamp(CameraRotation.Pitch + RotationChange, -50.0f, 20.0f);
+	CameraRotation.Pitch = FMath::Clamp(CameraRotation.Pitch + RotationChange, -30.0f, 20.0f);
 	Camera->SetRelativeRotation(CameraRotation);
 
-	SetMouseMoveTime();
+	if (FMath::Abs(AxisValue) > 1e-3)
+		SetMouseMoveTime();
 }
 
 // 根据摩擦力来减缓速度
@@ -115,16 +122,22 @@ FVector AddRandomOffset(const FVector& Direction, float Angle)
 	return RandomOffset;
 }
 
-float ATankCharacter::GetAngleOfRandomOffset()
+// 获取鼠标瞄准的进度
+float ATankCharacter::GetAimingProgress() const
 {
 	// 获取鼠标保持不动的时间
 	float IdleTime = GetWorld()->GetTimeSeconds() - LastMouseMoveTime;
 
 	// 根据鼠标保持不动的时间进行插值计算
-	float Alpha = IdleTime / ShrinkTime;
-	Alpha = FMath::Min(Alpha, 1.0f);
+	float Progress = IdleTime / ShrinkTime;
+	Progress = FMath::Min(Progress, 1.0f);
 
-	return FMath::Lerp(MaxAngle, MinAngle, Alpha);
+	return Progress;
+}
+
+float ATankCharacter::GetAngleOfRandomOffset()
+{
+	return FMath::Lerp(MaxAngle, MinAngle, GetAimingProgress());
 }
 
 void ATankCharacter::SetMouseMoveTime()
@@ -149,9 +162,6 @@ void ATankCharacter::Fire()
 	{
 		LaunchDirection = AddRandomOffset(LaunchDirection, GetAngleOfRandomOffset());
 		Projectile->Launch(LaunchDirection);
-		// log: GetAngleOfRandomOffset()
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red,
-		                                 FString::Printf(TEXT("GetAngleOfRandomOffset: %f"), GetAngleOfRandomOffset()));
 	}
 }
 
