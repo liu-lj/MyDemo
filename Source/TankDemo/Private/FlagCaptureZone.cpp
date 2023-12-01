@@ -5,54 +5,7 @@
 #include "Engine/StaticMesh.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/Character.h"
-
-void MyLogWarning(const FString& InString)
-{
-	// return;
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *InString);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, InString);
-}
-
-void MyLog(const FString& InString)
-{
-	// return;
-	UE_LOG(LogTemp, Log, TEXT("%s"), *InString);
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, InString);
-}
-
-void PrintCollisionInfo(const UStaticMeshComponent* smComp)
-{
-	MyLog(TEXT("PrintCollisionInfo"));
-	if (!smComp)
-	{
-		MyLogWarning(TEXT("SMesh is NULL"));
-		return;
-	}
-
-	MyLog(FString::Printf(TEXT("SMesh: %s"), *smComp->GetName()));
-
-	if (UStaticMesh* Mesh = smComp->GetStaticMesh())
-	{
-		MyLog(FString::Printf(TEXT("Static Mesh Name: %s"), *Mesh->GetName()));
-
-		// 获取碰撞设置
-		ECollisionEnabled::Type CollisionType = smComp->GetCollisionEnabled();
-		MyLog(FString::Printf(TEXT("Collision Type: %d"), static_cast<int32>(CollisionType)));
-		
-		const FCollisionShape CollisionShape = smComp->GetCollisionShape();
-		auto ShapeType = CollisionShape.ShapeType;
-		MyLog(FString::Printf(TEXT("Collision Shape Type: %d"), static_cast<int32>(ShapeType)));
-
-		// 获取碰撞响应
-		FCollisionResponseContainer CollisionResponse = smComp->GetCollisionResponseToChannels();
-		// UE_LOG(LogTemp, Warning, TEXT("Collision Response: %s"), CollisionResponse->ToString());
-
-		// 获取是否启用物理模拟
-		bool bSimulatePhysics = smComp->IsSimulatingPhysics();
-		MyLog(FString::Printf(TEXT("Simulate Physics: %d"), bSimulatePhysics));
-	}
-	else MyLogWarning(TEXT("GetStaticMesh is NULL"));	
-}
+#include "Utils.hpp"
 
 AFlagCaptureZone::AFlagCaptureZone()
 {
@@ -99,8 +52,6 @@ void AFlagCaptureZone::OnZoneEndOverlap(UPrimitiveComponent* OverlappedComponent
 void AFlagCaptureZone::BeginPlay()
 {
 	Super::BeginPlay();
-
-	PrintCollisionInfo(ZoneMesh);
 }
 
 float AFlagCaptureZone::GetCaptureProgress()

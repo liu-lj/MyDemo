@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TankProjectile.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
 #include "TankCharacter.generated.h"
@@ -18,7 +19,6 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void Tick(float DeltaTime) override;
-	void ApplyFriction(float DeltaTime);
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Tank")
@@ -31,22 +31,34 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Tank")
 	UStaticMeshComponent* TurretMesh;
-	
+
 	UPROPERTY(EditAnywhere, Category = "Tank")
 	UStaticMeshComponent* BarrelMesh;
+	UPROPERTY(EditAnywhere, Category = "Tank")
+	USceneComponent* FirePosition;
+
+	UPROPERTY(EditAnywhere, Category = "Tank")
+	TSubclassOf<ATankProjectile> ProjectileClass;
 
 	UPROPERTY(EditAnywhere, Category = "Tank")
 	float MovementSpeed;
 	UPROPERTY(EditAnywhere, Category = "Tank")
 	float RotationSpeed;
 
-	UPROPERTY(EditAnywhere, Category = "Movement")
+	UPROPERTY(EditAnywhere, Category = "Tank")
+	float MaxAngle;
+	UPROPERTY(EditAnywhere, Category = "Tank")
+	float MinAngle;
+	UPROPERTY(EditAnywhere, Category = "Tank")
+	float ShrinkTime;
+
+	UPROPERTY(EditAnywhere, Category = "Tank")
 	float MaxSpeed;
 
-	UPROPERTY(EditAnywhere, Category = "Movement")
+	UPROPERTY(EditAnywhere, Category = "Tank")
 	float Acceleration;
 
-	UPROPERTY(EditAnywhere, Category = "Movement")
+	UPROPERTY(EditAnywhere, Category = "Tank")
 	float Friction;
 
 	FVector CurrentVelocity;
@@ -56,4 +68,11 @@ private:
 	void MoveRight(float AxisValue);
 	void TurnTurret(float AxisValue);
 	void CameraUpAndDown(float AxisValue);
+	void ApplyFriction(float DeltaTime);
+	float GetAngleOfRandomOffset();
+	void SetMouseMoveTime();
+	void Fire();
+	FVector CalculateLaunchDirection() const;
+
+	float LastMouseMoveTime;
 };
