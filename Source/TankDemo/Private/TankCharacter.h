@@ -9,6 +9,16 @@
 #include "Components/AudioComponent.h"
 #include "TankCharacter.generated.h"
 
+UENUM()
+enum class ETankMeshType : uint8
+{
+	Body UMETA(DisplayName = "Body"),
+	Turret UMETA(DisplayName = "Turret"),
+	Barrel UMETA(DisplayName = "Barrel"),
+	Track UMETA(DisplayName = "Track"),
+	None UMETA(DisplayName = "None")
+};
+
 UCLASS()
 class ATankCharacter : public ACharacter
 {
@@ -17,42 +27,52 @@ class ATankCharacter : public ACharacter
 public:
 	ATankCharacter();
 	virtual void BeginPlay() override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void SetupPlayerInputComponent(
+		class UInputComponent* PlayerInputComponent) override;
+	ETankMeshType GetTankMeshType(const UStaticMeshComponent* TankMesh) const;
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintCallable, Category = "Tank")
+	UFUNCTION(BlueprintCallable)
 	float GetAimingProgress() const;
 	// 装填时间
-	UFUNCTION(BlueprintCallable, Category = "Tank")
+	UFUNCTION(BlueprintCallable)
 	float GetRemainingReloadTime() const;
 
 protected:
-	UPROPERTY(EditAnywhere, Category = "Tank")
+	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* BodyMesh;
 
-	UPROPERTY(EditAnywhere, Category = "Tank")
+	UPROPERTY(EditAnywhere)
 	USceneComponent* CameraRoot;
-	UPROPERTY(EditAnywhere, Category = "Tank")
+	UPROPERTY(EditAnywhere)
 	UCameraComponent* Camera;
 
-	UPROPERTY(EditAnywhere, Category = "Tank")
+	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* TurretMesh;
 
-	UPROPERTY(EditAnywhere, Category = "Tank")
+	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* BarrelMesh;
-	UPROPERTY(EditAnywhere, Category = "Tank")
+	UPROPERTY(EditAnywhere)
 	USceneComponent* FirePosition;
 
-	UPROPERTY(EditAnywhere, Category = "Tank")
+	UPROPERTY(EditAnywhere)
+	USceneComponent* TrackMesh;
+
+	UPROPERTY(EditAnywhere)
 	UAudioComponent* Audio;
-	 
-	UPROPERTY(EditAnywhere, Category = "Tank")
+
+	UPROPERTY(EditAnywhere)
 	TSubclassOf<ATankProjectile> ProjectileClass;
 
 	UPROPERTY(EditAnywhere, Category = "Tank")
 	float MovementSpeed;
 	UPROPERTY(EditAnywhere, Category = "Tank")
 	float RotationSpeed;
+
+	UPROPERTY(EditAnywhere, Category = "Tank")
+	float ElevationAngle; // 仰角
+	UPROPERTY(EditAnywhere, Category = "Tank")
+	float DepressionAngle; // 俯角
 
 	UPROPERTY(EditAnywhere, Category = "Tank")
 	float ReloadTime;

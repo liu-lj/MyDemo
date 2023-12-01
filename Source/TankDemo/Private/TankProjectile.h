@@ -17,7 +17,8 @@ public:
 	// Sets default values for this actor's properties
 	ATankProjectile();
 	void Launch(const FVector& Direction) const;
-	void MakeExplosionEffect(const FVector& Location, const FRotator& Rotation) const;
+	void MakeExplosionEffect(const FVector& Location,
+	                         const FRotator& Rotation) const;
 
 protected:
 	// Called when the game starts or when spawned
@@ -33,8 +34,9 @@ protected:
 	UParticleSystem* ImpactEffect;
 
 	UFUNCTION()
-	void OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-	                     FVector NormalImpulse, const FHitResult& Hit);
+	void OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
+	                     UPrimitiveComponent* OtherComp, FVector NormalImpulse,
+	                     const FHitResult& Hit);
 
 public:
 	virtual void Tick(float DeltaTime) override;

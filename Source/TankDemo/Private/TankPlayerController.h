@@ -8,14 +8,13 @@
 #include "TankPlayerController.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
-class ATankPlayerController : public APlayerController
-{
-	GENERATED_BODY()
-	
-	ATankPlayerController();
-	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
+class ATankPlayerController : public APlayerController {
+  GENERATED_BODY()
+
+  ATankPlayerController();
+  virtual void BeginPlay() override;
+  virtual void Tick(float DeltaTime) override;
 };
