@@ -21,7 +21,7 @@ enum class ETankMeshType : uint8
 };
 
 UCLASS()
-class ATankCharacter : public ACharacter  , public IDamageableTank
+class ATankCharacter : public ACharacter, public IDamageableTank
 {
 	GENERATED_BODY()
 
@@ -100,6 +100,8 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Tank")
 	float Friction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Tank")
+	int MaxHealth;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Tank")
 	int Health;
 
