@@ -8,6 +8,8 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "TankProjectile.generated.h"
 
+class ATankCharacter;
+
 UCLASS()
 class ATankProjectile : public AActor
 {
@@ -19,6 +21,8 @@ public:
 	void Launch(const FVector& Direction) const;
 	void MakeExplosionEffect(const FVector& Location,
 	                         const FRotator& Rotation) const;
+
+	ATankCharacter* Shooter;
 
 protected:
 	// Called when the game starts or when spawned
@@ -32,6 +36,12 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "TankProjectile")
 	UParticleSystem* ImpactEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = "TankProjectile")
+	float PenetrationDepth;
+
+	UPROPERTY(EditDefaultsOnly, Category = "TankProjectile")
+	float MaxDamage;
 
 	UFUNCTION()
 	void OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,

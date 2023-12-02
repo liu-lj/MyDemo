@@ -54,41 +54,17 @@ void ATankProjectile::OnProjectileHit(UPrimitiveComponent* HitComponent,
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactEffect,
 		                                         Hit.ImpactPoint);
 
-		// try convert OtherActor to ATankCharacter
-		if (ATankCharacter* TankCharacter = Cast<ATankCharacter>(OtherActor))
+		// try convert OtherActor to IDamageableTank
+		if (IDamageableTank* DamageableTank = Cast<IDamageableTank>(OtherActor))
 		{
-			// 伤害
-			TankCharacter->TakeDamage(100.0f, FDamageEvent(),
-			                          GetInstigatorController(), this);
-			
-			if (UStaticMeshComponent* StaticMeshComponent =
-				Cast<UStaticMeshComponent>(OtherComp))
-			{
-				switch (TankCharacter->GetTankMeshType(StaticMeshComponent))
-				{
-				case ETankMeshType::Body:
-					break;
-				case ETankMeshType::Turret:
-					break;
-				case ETankMeshType::Barrel:
-					break;
-				case ETankMeshType::Track:
-					break;
-				case ETankMeshType::None:
-					MyLogError("Not a valid tank mesh type");
-					break;
-				}
-			}
-			// else convert to collision cylinder
-			else if (UCapsuleComponent* CapsuleComponent = Cast<UCapsuleComponent>(OtherComp))
-			{
-			}
-
+			// 计算炮弹与碰撞点法线的夹角
 			FVector ImpactNormal = Hit.ImpactNormal;
 			float Angle = FMath::Acos(
 				FVector::DotProduct(ImpactNormal, -ProjectileMovementComponent->Velocity.GetSafeNormal()));
 			float Degrees = FMath::RadiansToDegrees(Angle);
-			MyLog(FString::Printf(TEXT("Angle = %f"), Degrees));
+
+			float Result = DamageableTank->TankTakeDamage(MaxDamage, FDamageEvent(), Shooter->GetController(), Shooter,
+			                                              Degrees, PenetrationDepth, OtherComp);
 		}
 	}
 
