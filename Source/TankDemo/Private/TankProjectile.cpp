@@ -9,7 +9,9 @@
 #include "Engine/DamageEvents.h"
 #include "Kismet/GameplayStatics.h"
 
-ATankProjectile::ATankProjectile()
+ATankProjectile::ATankProjectile():
+	PenetrationDepth(140.0f), // 穿深
+	Damage(30.0f) // 伤害
 {
 	PrimaryActorTick.bCanEverTick = false;
 
@@ -63,7 +65,7 @@ void ATankProjectile::OnProjectileHit(UPrimitiveComponent* HitComponent,
 				FVector::DotProduct(ImpactNormal, -ProjectileMovementComponent->Velocity.GetSafeNormal()));
 			float Degrees = FMath::RadiansToDegrees(Angle);
 
-			float Result = DamageableTank->TankTakeDamage(MaxDamage, FDamageEvent(), Shooter->GetController(), Shooter,
+			float Result = DamageableTank->TankTakeDamage(Damage, FDamageEvent(), Shooter->GetController(), Shooter,
 			                                              Degrees, PenetrationDepth, OtherComp);
 		}
 	}

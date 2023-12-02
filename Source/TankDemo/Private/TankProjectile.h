@@ -41,7 +41,7 @@ protected:
 	float PenetrationDepth;
 
 	UPROPERTY(EditDefaultsOnly, Category = "TankProjectile")
-	float MaxDamage;
+	float Damage;
 
 	UFUNCTION()
 	void OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,

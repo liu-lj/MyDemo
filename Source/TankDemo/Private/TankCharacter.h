@@ -100,6 +100,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Tank")
 	float Friction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Tank")
+	int Health;
+
 private:
 	void MoveForward(float AxisValue);
 	void MoveRight(float AxisValue);
@@ -109,6 +112,8 @@ private:
 	float GetAngleOfRandomOffset();
 	void SetMouseMoveTime();
 	void Fire();
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	                         AActor* DamageCauser) override;
 	FVector CalculateLaunchDirection() const;
 
 	FVector CurrentVelocity;
