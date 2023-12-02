@@ -22,7 +22,8 @@ ATankCharacter::ATankCharacter()
 	  MaxSpeed(1000.0f), // 最大速度 (暂未使用)
 	  Acceleration(10.0f), // 加速度
 	  Friction(200.0f), // 摩擦力
-	  Health(100), // 生命值
+	  MaxHealth(100), // 生命值
+	  Health(MaxHealth), // 当前生命值
 	  LastFireTime(-ReloadTime) // 上次开火时间
 {
 	// 车身网格
@@ -252,7 +253,9 @@ float ATankCharacter::TankTakeDamage(float DamageAmount, FDamageEvent const& Dam
 	// if (EffectiveArmor > InPenetrationDepth) return 0;
 	if (EffectiveArmor > InPenetrationDepth)
 	{
-		MyLogErrorf(TEXT("ricochet, armor = %f, angle = %f, effective armor = %f, penetration depth = %f"), ArmorThickness, InPenetrationAngle, EffectiveArmor, InPenetrationDepth);
+		MyLogErrorf(
+			TEXT("ricochet, armor = %f, angle = %f, effective armor = %f, penetration depth = %f"), ArmorThickness,
+			InPenetrationAngle, EffectiveArmor, InPenetrationDepth);
 		return 0;
 	}
 
