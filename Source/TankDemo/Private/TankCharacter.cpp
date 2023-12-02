@@ -22,6 +22,7 @@ ATankCharacter::ATankCharacter()
 	  MaxSpeed(1000.0f), // 最大速度 (暂未使用)
 	  Acceleration(10.0f), // 加速度
 	  Friction(200.0f), // 摩擦力
+	  Health(100), // 生命值
 	  LastFireTime(-ReloadTime) // 上次开火时间
 {
 	// 车身网格
@@ -212,6 +213,20 @@ void ATankCharacter::Fire()
 	}
 }
 
+float ATankCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
+                                 AController* EventInstigator,
+                                 AActor* DamageCauser)
+{
+	Health -= static_cast<int>(DamageAmount);
+	MyLog(FString::Printf(TEXT("Health = %d, damage = %f"), Health, DamageAmount));
+	if (Health <= 0)
+	{
+		MyLogWarning("Tank is dead");
+		// TODO: 死亡
+	}
+	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+}
+
 float ATankCharacter::TankTakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
                                      AController* EventInstigator,
                                      AActor* DamageCauser, float InPenetrationAngle,
@@ -234,29 +249,39 @@ float ATankCharacter::TankTakeDamage(float DamageAmount, FDamageEvent const& Dam
 	float EffectiveArmor = ArmorThickness / FMath::Cos(FMath::DegreesToRadians(InPenetrationAngle));
 
 	// 跳弹
-	if (EffectiveArmor > InPenetrationDepth) return 0;
+	// if (EffectiveArmor > InPenetrationDepth) return 0;
+	if (EffectiveArmor > InPenetrationDepth)
+	{
+		MyLogErrorf(TEXT("ricochet, armor = %f, angle = %f, effective armor = %f, penetration depth = %f"), ArmorThickness, InPenetrationAngle, EffectiveArmor, InPenetrationDepth);
+		return 0;
+	}
 
 	switch (HitMeshType)
 	{
 	case ETankMeshType::Barrel: // 击中炮管，无伤害，炮管会被击毁
 		// TODO: 炮管被击毁
+		MyLog("hit barrel");
 		return 0;
 	case ETankMeshType::Body: // 击中车体，造成伤害
 		DamageAmount *= FMath::FRandRange(0.95f, 1.05f);
-		return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+		MyLogf(TEXT("hit body, cause damage = %f"), DamageAmount);
+		return TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	case ETankMeshType::Turret: // 击中炮塔，概率击毁炮塔或造成伤害
 		if (FMath::RandBool()) // 击毁炮塔
 		{
 			// TODO: 炮塔被击毁
+			MyLog("hit turret, turret is destroyed");
 		}
 		else // 造成伤害
 		{
 			DamageAmount *= FMath::FRandRange(0.95f, 1.05f);
-			return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+			MyLogf(TEXT("hit turret, cause damage = %f"), DamageAmount);
+			return TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 		}
 		return 0;
 	case ETankMeshType::Track: // 击中履带，无伤害，履带会被击毁
 		// TODO: 履带被击毁
+		MyLog("hit track");
 		return 0;
 	default: MyLogError("Add new mesh type to switch statement at ATankCharacter::TankTakeDamage");
 		return 0;
