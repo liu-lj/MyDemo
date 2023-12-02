@@ -4,13 +4,17 @@
 
 #include "TankCharacter.h"
 
+#include <random>
 #include <Utils.hpp>
+
+#include "Components/CapsuleComponent.h"
 
 ATankCharacter::ATankCharacter()
 	: MovementSpeed(500.0f), // 移动速度
 	  RotationSpeed(100.0f), // 旋转速度
 	  ElevationAngle(30.0f), // 最大仰角
 	  DepressionAngle(-20.0f), // 最大俯角
+	  ArmorThickness(100.0f), // 装甲厚度
 	  ReloadTime(5.0f), // 装填时间
 	  MaxAngle(2.0f), // 最大扰动角度
 	  MinAngle(0.1f), // 最小扰动角度
@@ -163,8 +167,26 @@ void ATankCharacter::SetMouseMoveTime()
 	LastMouseMoveTime = GetWorld()->GetTimeSeconds();
 }
 
+void SetCursorToCenter()
+{
+	// 获取当前视图大小
+	FVector2D ViewportSize;
+	if (GEngine && GEngine->GameViewport)
+	{
+		GEngine->GameViewport->GetViewportSize(ViewportSize);
+	}
+
+	// 设置鼠标位置为屏幕中心
+	if (GEngine && GEngine->GameViewport && GEngine->GameViewport->Viewport)
+	{
+		FViewport* Viewport = GEngine->GameViewport->Viewport;
+		Viewport->SetMouse(ViewportSize.X / 2, ViewportSize.Y / 2);
+	}
+}
+
 void ATankCharacter::Fire()
 {
+	SetCursorToCenter();
 	FVector LaunchDirection = CalculateLaunchDirection();
 	if (LaunchDirection.Length() < 1e-3) return;
 
@@ -183,9 +205,61 @@ void ATankCharacter::Fire()
 	{
 		LaunchDirection =
 			AddRandomOffset(LaunchDirection, GetAngleOfRandomOffset());
+		Projectile->Shooter = this;
 		Projectile->Launch(LaunchDirection);
 		LastFireTime = GetWorld()->GetTimeSeconds();
 		Audio->Play();
+	}
+}
+
+float ATankCharacter::TankTakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
+                                     AController* EventInstigator,
+                                     AActor* DamageCauser, float InPenetrationAngle,
+                                     float InPenetrationDepth, UPrimitiveComponent* HitComponent)
+{
+	// 获取被击中的网格类型
+	ETankMeshType HitMeshType = ETankMeshType::None;
+	if (UStaticMeshComponent* StaticMeshComponent =
+		Cast<UStaticMeshComponent>(HitComponent))
+	{
+		HitMeshType = GetTankMeshType(StaticMeshComponent);
+	}
+	if (HitMeshType == ETankMeshType::None)
+	{
+		MyLogError("Not a valid tank mesh type");
+		return 0;
+	}
+
+	// 计算等效装甲
+	float EffectiveArmor = ArmorThickness / FMath::Cos(FMath::DegreesToRadians(InPenetrationAngle));
+
+	// 跳弹
+	if (EffectiveArmor > InPenetrationDepth) return 0;
+
+	switch (HitMeshType)
+	{
+	case ETankMeshType::Barrel: // 击中炮管，无伤害，炮管会被击毁
+		// TODO: 炮管被击毁
+		return 0;
+	case ETankMeshType::Body: // 击中车体，造成伤害
+		DamageAmount *= FMath::FRandRange(0.95f, 1.05f);
+		return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	case ETankMeshType::Turret: // 击中炮塔，概率击毁炮塔或造成伤害
+		if (FMath::RandBool()) // 击毁炮塔
+		{
+			// TODO: 炮塔被击毁
+		}
+		else // 造成伤害
+		{
+			DamageAmount *= FMath::FRandRange(0.95f, 1.05f);
+			return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+		}
+		return 0;
+	case ETankMeshType::Track: // 击中履带，无伤害，履带会被击毁
+		// TODO: 履带被击毁
+		return 0;
+	default: MyLogError("Add new mesh type to switch statement at ATankCharacter::TankTakeDamage");
+		return 0;
 	}
 }
 
