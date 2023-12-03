@@ -21,17 +21,21 @@ enum class ETankMeshType : uint8
 	None UMETA(DisplayName = "None")
 };
 
-UCLASS()
+UCLASS(Blueprintable)
 class ATankCharacter : public ACharacter, public IDamageableTank
 {
 	GENERATED_BODY()
 
 public:
 	ATankCharacter();
+
 	virtual void BeginPlay() override;
+
 	virtual void SetupPlayerInputComponent(
 		class UInputComponent* PlayerInputComponent) override;
+
 	ETankMeshType GetTankMeshType(const UStaticMeshComponent* TankMesh) const;
+
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable)
