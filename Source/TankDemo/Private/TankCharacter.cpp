@@ -75,14 +75,15 @@ void ATankCharacter::MoveForward(float AxisValue)
 
 void ATankCharacter::MoveRight(float AxisValue)
 {
-	FVector Direction = GetActorRightVector();
-	FVector Force = Direction * AxisValue * Acceleration;
+	if (abs(AxisValue) < 1e-3) return;
 
-	// 涡轮增压器
-	if (TurbochargerComponent != nullptr && TurbochargerComponent->IsLoaded())
-		Force *= 1.1f;
+	AxisValue *= 0.5f; // 减缓旋转速度
+	FRotator Rotation = Controller->GetControlRotation();
+	Rotation.Yaw += AxisValue * RotationSpeed * GetWorld()->DeltaTimeSeconds;
+	Controller->SetControlRotation(Rotation);
 
-	CurrentVelocity += Force;
+	// 反向旋转相机，保证指向不变
+	TurnTurret(-AxisValue);
 }
 
 void ATankCharacter::TurnTurret(float AxisValue)
