@@ -223,10 +223,8 @@ float ATankCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
                                  AActor* DamageCauser)
 {
 	Health -= static_cast<int>(DamageAmount);
-	MyLog(FString::Printf(TEXT("Health = %d, damage = %f"), Health, DamageAmount));
 	if (Health <= 0)
 	{
-		MyLogWarning("Tank is dead");
 		// TODO: 死亡
 		ASoundManager::GetInstance()->PlayDestroyedSound();
 	}
