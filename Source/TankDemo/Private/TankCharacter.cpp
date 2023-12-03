@@ -256,9 +256,6 @@ float ATankCharacter::TankTakeDamage(float DamageAmount, FDamageEvent const& Dam
 
 	if (EffectiveArmor > InPenetrationDepth)
 	{
-		MyLogErrorf(
-			TEXT("ricochet, armor = %f, angle = %f, effective armor = %f, penetration depth = %f"), ArmorThickness,
-			InPenetrationAngle, EffectiveArmor, InPenetrationDepth);
 		ASoundManager::GetInstance()->PlayRicochetSound();
 		return 0;
 	}
