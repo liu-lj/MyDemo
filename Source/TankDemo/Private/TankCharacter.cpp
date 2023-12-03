@@ -65,6 +65,11 @@ void ATankCharacter::MoveForward(float AxisValue)
 {
 	FVector Direction = GetActorForwardVector();
 	FVector Force = Direction * AxisValue * Acceleration;
+
+	// 涡轮增压器
+	if (TurbochargerComponent != nullptr && TurbochargerComponent->IsLoaded())
+		Force *= 1.1f;
+
 	CurrentVelocity += Force;
 }
 
@@ -72,6 +77,11 @@ void ATankCharacter::MoveRight(float AxisValue)
 {
 	FVector Direction = GetActorRightVector();
 	FVector Force = Direction * AxisValue * Acceleration;
+
+	// 涡轮增压器
+	if (TurbochargerComponent != nullptr && TurbochargerComponent->IsLoaded())
+		Force *= 1.1f;
+
 	CurrentVelocity += Force;
 }
 
@@ -106,10 +116,6 @@ void ATankCharacter::ApplyMove(float DeltaTime)
 
 	FVector VelocityDirection = CurrentVelocity.GetSafeNormal();
 	float Speed = CurrentVelocity.Size();
-
-	// 涡轮增压器
-	if (TurbochargerComponent != nullptr && TurbochargerComponent->IsLoaded())
-		Speed *= 2.1f;
 
 	// move position
 	FVector PositionChange = CurrentVelocity * DeltaTime;
