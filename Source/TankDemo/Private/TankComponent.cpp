@@ -3,26 +3,46 @@
 #include "TankComponent.h"
 #include "Utils.hpp"
 
-UTankComponent::UTankComponent()
+UTankComponent::UTankComponent():
+	bIsDestroyed(false),
+	bIsLoaded(false)
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 }
 
 void UTankComponent::Destroy()
 {
 	DestroyedTime = GetWorld()->GetTimeSeconds();
-	if (ComponentState == EComponentState::Normal)
+	if (!bIsDestroyed)
 	{
-		OnComponentDamaged();
-		ComponentState = EComponentState::Damaged;
+		MyOnComponentDestroyed();
+		bIsDestroyed = true;
 	}
 	GetWorld()->GetTimerManager().SetTimer(RepairTimerHandle, this, &UTankComponent::TryRepairComponent, RepairTime,
 	                                       false);
+	OnComponentDestroyed.Broadcast();
 }
 
 bool UTankComponent::IsUsable() const
 {
-	return ComponentState == EComponentState::Normal;
+	return !bIsDestroyed;
+}
+
+void UTankComponent::Load()
+{
+	bIsLoaded = true;
+	OnComponentLoaded.Broadcast();
+}
+
+void UTankComponent::Unload()
+{
+	bIsLoaded = false;
+	OnComponentUnloaded.Broadcast();
+}
+
+bool UTankComponent::IsLoaded() const
+{
+	return bIsLoaded;
 }
 
 void UTankComponent::BeginPlay()
@@ -35,8 +55,9 @@ void UTankComponent::TryRepairComponent()
 	float TimeNow = GetWorld()->GetTimeSeconds();
 	if (TimeNow - DestroyedTime >= RepairTime)
 	{
-		ComponentState = EComponentState::Normal;
+		bIsDestroyed = false;
 		MyLog("component repaired");
-		OnComponentRepaired();
+		MyOnComponentRepaired();
+		OnComponentRepaired.Broadcast();
 	}
 }

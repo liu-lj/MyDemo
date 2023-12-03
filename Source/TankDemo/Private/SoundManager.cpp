@@ -3,6 +3,7 @@
 
 #include "SoundManager.h"
 
+#include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 ASoundManager::ASoundManager()
@@ -65,9 +66,4 @@ void ASoundManager::BeginPlay()
 		}
 		Instance = Cast<ASoundManager>(SoundEffectActors[0]);
 	}
-}
-
-void ASoundManager::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 }

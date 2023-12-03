@@ -73,7 +73,16 @@ protected:
 	USceneComponent* TrackMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTankComponent* TrackComponent;
-
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTankComponent* GunLayingDriveComponent; // 改进型炮控系统
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTankComponent* RammerComponent; // 输弹机
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTankComponent* TurbochargerComponent; // 涡轮增压器
+	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ATankProjectile> ProjectileClass;
 

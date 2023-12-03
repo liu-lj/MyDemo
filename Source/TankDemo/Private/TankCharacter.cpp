@@ -4,11 +4,9 @@
 
 #include "TankCharacter.h"
 
-#include <random>
 #include <Utils.hpp>
 
 #include "SoundManager.h"
-#include "Components/CapsuleComponent.h"
 
 ATankCharacter::ATankCharacter()
 	: MovementSpeed(500.0f), // 移动速度
@@ -52,8 +50,6 @@ ATankCharacter::ATankCharacter()
 	// 履带网格
 	TrackMesh = CreateDefaultSubobject<USceneComponent>("TrackMesh");
 	TrackMesh->SetupAttachment(BodyMesh);
-
-	ConstructionScript();
 }
 
 void ATankCharacter::BeginPlay() { Super::BeginPlay(); }
@@ -110,6 +106,10 @@ void ATankCharacter::ApplyMove(float DeltaTime)
 
 	FVector VelocityDirection = CurrentVelocity.GetSafeNormal();
 	float Speed = CurrentVelocity.Size();
+
+	// 涡轮增压器
+	if (TurbochargerComponent != nullptr && TurbochargerComponent->IsLoaded())
+		Speed *= 2.1f;
 
 	// move position
 	FVector PositionChange = CurrentVelocity * DeltaTime;
