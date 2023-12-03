@@ -1,6 +1,7 @@
 // Demo by LLJ. You just DO WHAT YOU WANT TO.
 
 #include "TankComponent.h"
+#include "Utils.hpp"
 
 UTankComponent::UTankComponent()
 {
@@ -35,6 +36,7 @@ void UTankComponent::TryRepairComponent()
 	if (TimeNow - DestroyedTime >= RepairTime)
 	{
 		ComponentState = EComponentState::Normal;
+		MyLog("component repaired");
 		OnComponentRepaired();
 	}
 }

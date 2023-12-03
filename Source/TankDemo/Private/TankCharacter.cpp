@@ -52,6 +52,8 @@ ATankCharacter::ATankCharacter()
 	// 履带网格
 	TrackMesh = CreateDefaultSubobject<USceneComponent>("TrackMesh");
 	TrackMesh->SetupAttachment(BodyMesh);
+
+	ConstructionScript();
 }
 
 void ATankCharacter::BeginPlay() { Super::BeginPlay(); }
@@ -79,8 +81,8 @@ void ATankCharacter::MoveRight(float AxisValue)
 
 void ATankCharacter::TurnTurret(float AxisValue)
 {
-	if (!TurretComponent->IsUsable()) return;
-	
+	if (TurretComponent == nullptr || !TurretComponent->IsUsable()) return;
+
 	float RotationChange =
 		AxisValue * RotationSpeed * GetWorld()->DeltaTimeSeconds;
 	CameraRoot->AddLocalRotation(FRotator(0.0f, RotationChange, 0.0f));
@@ -104,8 +106,8 @@ void ATankCharacter::CameraUpAndDown(float AxisValue)
 // 根据摩擦力来减缓速度
 void ATankCharacter::ApplyMove(float DeltaTime)
 {
-	if (!TrackComponent->IsUsable()) return;
-	
+	if (TrackComponent == nullptr || !TrackComponent->IsUsable()) return;
+
 	FVector VelocityDirection = CurrentVelocity.GetSafeNormal();
 	float Speed = CurrentVelocity.Size();
 
@@ -188,8 +190,8 @@ void SetCursorToCenter()
 
 void ATankCharacter::Fire()
 {
-	if (!BarrelComponent->IsUsable()) return;
-	
+	if (BarrelComponent == nullptr || !BarrelComponent->IsUsable()) return;
+
 	SetCursorToCenter();
 	FVector LaunchDirection = CalculateLaunchDirection();
 	if (LaunchDirection.Length() < 1e-3) return;
