@@ -7,6 +7,7 @@
 #include <random>
 #include <Utils.hpp>
 
+#include "SoundManager.h"
 #include "Components/CapsuleComponent.h"
 
 ATankCharacter::ATankCharacter()
@@ -51,11 +52,6 @@ ATankCharacter::ATankCharacter()
 	// 履带网格
 	TrackMesh = CreateDefaultSubobject<USceneComponent>("TrackMesh");
 	TrackMesh->SetupAttachment(BodyMesh);
-
-	// 开火音效
-	Audio = CreateDefaultSubobject<UAudioComponent>("Fire Sound");
-	Audio->SetupAttachment(RootComponent);
-	Audio->bAutoActivate = false;
 }
 
 void ATankCharacter::BeginPlay() { Super::BeginPlay(); }
@@ -64,7 +60,7 @@ void ATankCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	ApplyFriction(DeltaTime);
+	ApplyMove(DeltaTime);
 }
 
 void ATankCharacter::MoveForward(float AxisValue)
@@ -83,6 +79,8 @@ void ATankCharacter::MoveRight(float AxisValue)
 
 void ATankCharacter::TurnTurret(float AxisValue)
 {
+	if (!TurretComponent->IsUsable()) return;
+	
 	float RotationChange =
 		AxisValue * RotationSpeed * GetWorld()->DeltaTimeSeconds;
 	CameraRoot->AddLocalRotation(FRotator(0.0f, RotationChange, 0.0f));
@@ -104,8 +102,10 @@ void ATankCharacter::CameraUpAndDown(float AxisValue)
 }
 
 // 根据摩擦力来减缓速度
-void ATankCharacter::ApplyFriction(float DeltaTime)
+void ATankCharacter::ApplyMove(float DeltaTime)
 {
+	if (!TrackComponent->IsUsable()) return;
+	
 	FVector VelocityDirection = CurrentVelocity.GetSafeNormal();
 	float Speed = CurrentVelocity.Size();
 
@@ -188,6 +188,8 @@ void SetCursorToCenter()
 
 void ATankCharacter::Fire()
 {
+	if (!BarrelComponent->IsUsable()) return;
+	
 	SetCursorToCenter();
 	FVector LaunchDirection = CalculateLaunchDirection();
 	if (LaunchDirection.Length() < 1e-3) return;
@@ -210,7 +212,7 @@ void ATankCharacter::Fire()
 		Projectile->Shooter = this;
 		Projectile->Launch(LaunchDirection);
 		LastFireTime = GetWorld()->GetTimeSeconds();
-		Audio->Play();
+		ASoundManager::GetInstance()->PlayFireSound();
 	}
 }
 
@@ -224,7 +226,10 @@ float ATankCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 	{
 		MyLogWarning("Tank is dead");
 		// TODO: 死亡
+		ASoundManager::GetInstance()->PlayDestroyedSound();
 	}
+	else
+		ASoundManager::GetInstance()->PlayHitSound();
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
 
@@ -249,42 +254,34 @@ float ATankCharacter::TankTakeDamage(float DamageAmount, FDamageEvent const& Dam
 	// 计算等效装甲
 	float EffectiveArmor = ArmorThickness / FMath::Cos(FMath::DegreesToRadians(InPenetrationAngle));
 
-	// 跳弹
-	// if (EffectiveArmor > InPenetrationDepth) return 0;
 	if (EffectiveArmor > InPenetrationDepth)
 	{
 		MyLogErrorf(
 			TEXT("ricochet, armor = %f, angle = %f, effective armor = %f, penetration depth = %f"), ArmorThickness,
 			InPenetrationAngle, EffectiveArmor, InPenetrationDepth);
+		ASoundManager::GetInstance()->PlayRicochetSound();
 		return 0;
 	}
 
 	switch (HitMeshType)
 	{
 	case ETankMeshType::Barrel: // 击中炮管，无伤害，炮管会被击毁
-		// TODO: 炮管被击毁
-		MyLog("hit barrel");
+		BarrelComponent->Destroy();
 		return 0;
 	case ETankMeshType::Body: // 击中车体，造成伤害
 		DamageAmount *= FMath::FRandRange(0.95f, 1.05f);
-		MyLogf(TEXT("hit body, cause damage = %f"), DamageAmount);
 		return TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	case ETankMeshType::Turret: // 击中炮塔，概率击毁炮塔或造成伤害
 		if (FMath::RandBool()) // 击毁炮塔
-		{
-			// TODO: 炮塔被击毁
-			MyLog("hit turret, turret is destroyed");
-		}
+			TurretComponent->Destroy();
 		else // 造成伤害
 		{
 			DamageAmount *= FMath::FRandRange(0.95f, 1.05f);
-			MyLogf(TEXT("hit turret, cause damage = %f"), DamageAmount);
 			return TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 		}
 		return 0;
 	case ETankMeshType::Track: // 击中履带，无伤害，履带会被击毁
-		// TODO: 履带被击毁
-		MyLog("hit track");
+		TrackComponent->Destroy();
 		return 0;
 	default: MyLogError("Add new mesh type to switch statement at ATankCharacter::TankTakeDamage");
 		return 0;

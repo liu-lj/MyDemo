@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "DamageableTank.h"
+#include "TankComponent.h"
 #include "TankProjectile.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Character.h"
@@ -54,17 +55,20 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* TurretMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTankComponent* TurretComponent;
 
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* BarrelMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTankComponent* BarrelComponent;
 	UPROPERTY(EditAnywhere)
 	USceneComponent* FirePosition;
 
 	UPROPERTY(EditAnywhere)
 	USceneComponent* TrackMesh;
-
-	UPROPERTY(EditAnywhere)
-	UAudioComponent* Audio;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTankComponent* TrackComponent;
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ATankProjectile> ProjectileClass;
@@ -110,7 +114,7 @@ private:
 	void MoveRight(float AxisValue);
 	void TurnTurret(float AxisValue);
 	void CameraUpAndDown(float AxisValue);
-	void ApplyFriction(float DeltaTime);
+	void ApplyMove(float DeltaTime);
 	float GetAngleOfRandomOffset();
 	void SetMouseMoveTime();
 	void Fire();
