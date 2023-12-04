@@ -88,7 +88,7 @@ void ATankCharacter::MoveRight(float AxisValue)
 	VelocityRotation.Yaw += AxisValue * RotationSpeed * GetWorld()->DeltaTimeSeconds;
 	float SlowDownFactor = 0.8f;
 	CurrentVelocity = VelocityRotation.Vector() * CurrentVelocity.Size() * SlowDownFactor;
-	
+
 	// 反向旋转相机，保证指向不变
 	TurnTurret(-AxisValue);
 }
@@ -200,14 +200,10 @@ void SetCursorToCenter()
 	}
 }
 
-void ATankCharacter::Fire()
+void ATankCharacter::FireTo(FVector LaunchDirection)
 {
 	if (BarrelComponent == nullptr || !BarrelComponent->IsUsable()) return;
-
-	SetCursorToCenter();
-	FVector LaunchDirection = CalculateLaunchDirection();
 	if (LaunchDirection.Length() < 1e-3) return;
-
 	if (GetRemainingReloadTime() > 0.0f) return;
 
 	// 创建炮弹
@@ -230,6 +226,13 @@ void ATankCharacter::Fire()
 	}
 }
 
+void ATankCharacter::Fire()
+{
+	SetCursorToCenter();
+	FVector LaunchDirection = CalculateLaunchDirection();
+	FireTo(LaunchDirection);
+}
+
 float ATankCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
                                  AController* EventInstigator,
                                  AActor* DamageCauser)
@@ -237,7 +240,11 @@ float ATankCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 	Health -= static_cast<int>(DamageAmount);
 	if (Health <= 0)
 	{
-		// TODO: 死亡
+		APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+		if (PlayerController != nullptr && PlayerController->GetPawn() == this)
+			OnGameLoss.Broadcast();
+		else
+			{OnGameWin.Broadcast(); MyLog("win");}
 		ASoundManager::GetInstance()->PlayDestroyedSound();
 	}
 	else

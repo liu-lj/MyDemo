@@ -21,6 +21,10 @@ enum class ETankMeshType : uint8
 	None UMETA(DisplayName = "None")
 };
 
+// DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGameResultEvent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGameWin);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGameLoss);
+
 UCLASS(Blueprintable)
 class ATankCharacter : public ACharacter, public IDamageableTank
 {
@@ -48,6 +52,12 @@ public:
 	                             AActor* DamageCauser, float InPenetrationAngle, float InPenetrationDepth,
 	                             UPrimitiveComponent* HitComponent) override;
 
+	UFUNCTION(BlueprintCallable)
+	void FireTo(FVector LaunchDirection);
+
+	UFUNCTION(BlueprintCallable)
+	void Fire();
+	
 protected:
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* BodyMesh;
@@ -121,9 +131,14 @@ protected:
 	int MaxHealth;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Tank")
 	int Health;
-	
+
 	UPROPERTY(EditAnywhere, Category = "Tank")
 	FString PlayerName;
+
+	UPROPERTY(BlueprintAssignable, Category = "Game")
+	FGameWin OnGameWin;
+	UPROPERTY(BlueprintAssignable, Category = "Game")
+	FGameLoss OnGameLoss;
 
 private:
 	void MoveForward(float AxisValue);
@@ -133,7 +148,6 @@ private:
 	void ApplyMove(float DeltaTime);
 	float GetAngleOfRandomOffset();
 	void SetMouseMoveTime();
-	void Fire();
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                         AActor* DamageCauser) override;
 	FVector CalculateLaunchDirection() const;
