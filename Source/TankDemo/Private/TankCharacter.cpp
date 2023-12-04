@@ -20,7 +20,7 @@ ATankCharacter::ATankCharacter()
 	  ShrinkTime(5.0f), // 瞄准时间
 	  MaxSpeed(1000.0f), // 最大速度 (暂未使用)
 	  Acceleration(10.0f), // 加速度
-	  Friction(200.0f), // 摩擦力
+	  Friction(400.0f), // 摩擦力
 	  MaxHealth(100), // 生命值
 	  Health(MaxHealth), // 当前生命值
 	  LastFireTime(-ReloadTime) // 上次开火时间
@@ -82,6 +82,13 @@ void ATankCharacter::MoveRight(float AxisValue)
 	Rotation.Yaw += AxisValue * RotationSpeed * GetWorld()->DeltaTimeSeconds;
 	Controller->SetControlRotation(Rotation);
 
+	// rotate CurrentVelocity
+	FVector VelocityDirection = CurrentVelocity.GetSafeNormal();
+	FRotator VelocityRotation = VelocityDirection.Rotation();
+	VelocityRotation.Yaw += AxisValue * RotationSpeed * GetWorld()->DeltaTimeSeconds;
+	float SlowDownFactor = 0.8f;
+	CurrentVelocity = VelocityRotation.Vector() * CurrentVelocity.Size() * SlowDownFactor;
+	
 	// 反向旋转相机，保证指向不变
 	TurnTurret(-AxisValue);
 }
@@ -123,9 +130,7 @@ void ATankCharacter::ApplyMove(float DeltaTime)
 	FVector NewPosition = GetActorLocation() + PositionChange;
 	SetActorLocation(NewPosition);
 
-	FVector FrictionForce = -VelocityDirection * Friction;
-	float Mass = 1;
-	FVector FrictionAcceleration = FrictionForce / Mass;
+	FVector FrictionAcceleration = -VelocityDirection * Friction;
 
 	CurrentVelocity += FrictionAcceleration * DeltaTime;
 
