@@ -244,7 +244,10 @@ float ATankCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 		if (PlayerController != nullptr && PlayerController->GetPawn() == this)
 			OnGameLoss.Broadcast();
 		else
-			{OnGameWin.Broadcast(); MyLog("win");}
+		{
+			OnGameWin.Broadcast();
+			MyLog("win");
+		}
 		ASoundManager::GetInstance()->PlayDestroyedSound();
 	}
 	else
